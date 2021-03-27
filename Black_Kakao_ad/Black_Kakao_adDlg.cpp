@@ -34,6 +34,7 @@ BEGIN_MESSAGE_MAP(CBlackKakaoadDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CBlackKakaoadDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDC_AUTO_RUN_BTN, &CBlackKakaoadDlg::OnBnClickedAutoRunBtn)
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_AUTO_UNDO_BTN, &CBlackKakaoadDlg::OnBnClickedAutoUndoBtn)
 END_MESSAGE_MAP()
 
 
@@ -122,15 +123,25 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 		CDialogEx::OnOK();
 	//}
 #else
+	// https://jungpaeng.tistory.com/10
 	hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡");
 	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
 	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
-	
-	RECT Rect;
-	::GetWindowRect(hwnd_KakaoMain, &Rect);
-	::SetWindowPos(hwnd_KakaoAd, NULL, NULL, NULL, NULL, NULL, SWP_NOACTIVATE);
-	::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (Rect.right - Rect.left - 2), (Rect.bottom - Rect.top - 33), SWP_NOMOVE);
 
+	
+	
+	// 광고 삭제 하는 부분.
+	//if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {
+		RECT Rect;
+		::GetWindowRect(hwnd_KakaoMain, &Rect);		
+		//::SetWindowPos(hwnd_KakaoAd, HWND_BOTTOM, NULL, NULL, NULL, NULL, /*SWP_NOACTIVATE*/SWP_NOACTIVATE/*SWP_HIDEWINDOW*/);
+		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (Rect.right - Rect.left - 2), 1000, SWP_NOMOVE );
+		
+		
+		::SendMessage(hwnd_KakaoAd, WM_CLOSE, NULL, NULL);
+		
+				
+	//}
 
 	//CDialogEx::OnOK();
 
@@ -140,6 +151,7 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 
 void CBlackKakaoadDlg::OnBnClickedAutoRunBtn()
 {
+#if 0
 	HKEY hKey = NULL;
 	wchar_t path[100];
 	wchar_t regSubKeyPath[100] = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -157,4 +169,76 @@ void CBlackKakaoadDlg::OnBnClickedAutoRunBtn()
 	}
 
 	AfxMessageBox(L"False");
+
+#elif 0
+	// 참고.
+	// https://nyamtutorial.tistory.com/134
+	// https://m.blog.naver.com/PostView.nhn?blogId=dunopiorg&logNo=220454481606&proxyReferer=&proxyReferer=https:%2F%2Fwww.google.com%2F
+	CRegKey regKey;
+
+	if (regKey.Create(HKEY_CURRENT_USER, L"SOFTWARE\\PClick") != ERROR_SUCCESS) {
+		MessageBox(L"등록 실패");
+	}
+	if (regKey.Open(HKEY_CURRENT_USER, L"SOFTWARE\\PClick") == ERROR_SUCCESS) {
+		regKey.SetStringValue(L"Path2", L"22"); //이름, 내용
+		regKey.Close();
+		MessageBox(L"등록 성공");
+	}
+	else {
+		MessageBox(L"등록 실패");
+	}
+
+	// 레지스트리 읽기.
+	CString strValue;
+	DWORD dwSize = 1024;
+	
+	if (regKey.Open(HKEY_CURRENT_USER, L"Software\\PClick") == ERROR_SUCCESS) {
+		if (regKey.QueryStringValue(L"Path2", strValue.GetBuffer(dwSize), &dwSize) == ERROR_SUCCESS) {
+			strValue.ReleaseBuffer();
+			regKey.Close();
+			MessageBox(strValue);
+		}
+		regKey.Close();
+	}
+#elif 0
+	HKEY hkey;
+	CString key_name, file_name;
+	char file_path[100];
+
+	// 레지스트리에 등록하고자 하는 키 이름
+	key_name = "MentSetup";
+
+	// 해당 경로의 레지스트리를 open 한다.
+	LONG reg = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0L,KEY_WRITE,&hkey);
+
+		// 레지스트리를 성공적으로 open 하였다면 ERROR_SUCCESS값이 reg 에 저장된다.
+		if (ERROR_SUCCESS == reg) {
+			strcpy(file_path, "C:\\Users\\CD21-1004\\Desktop\\Black_Kakao_ad-master\\Black_Kakao_ad-master\\Debug\\Black_Kakao_ad");
+			// 레지스트리의 run 항목에 자동 실행될 프로그램의 경로를 저장한다.
+			reg = RegSetValueEx(hkey, key_name, 0, REG_SZ, (BYTE*)file_path, REG_SZ);
+
+			if (reg == ERROR_SUCCESS) MessageBox(L"등록 성공");
+			else MessageBox(L"등록 실패");
+
+			// 오픈한 키를 닫는다.
+			RegCloseKey(hkey);
+		}
+#endif
+
+	
+}
+
+void CBlackKakaoadDlg::OnBnClickedAutoUndoBtn()
+{
+	// 레지스트리 삭제//	
+	CRegKey regKey;
+
+	// open Regstry Key
+	if (regKey.Open(HKEY_CURRENT_USER, L"Software\\PClick") == ERROR_SUCCESS) {
+		//regKey.DeleteValue(L"Path");
+		regKey.DeleteSubKey(L"PClick");
+		regKey.Close();
+	}
+	
 }
