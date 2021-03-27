@@ -127,18 +127,16 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 	hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡");
 	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
 	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
-
-	
-	
+		
 	// 광고 삭제 하는 부분.
 	//if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {
+		::SendMessage(hwnd_KakaoAd, /*WM_CLOSE |*/ WM_DESTROY, NULL, NULL);
 		RECT Rect;
-		::GetWindowRect(hwnd_KakaoMain, &Rect);		
+		::GetWindowRect(hwnd_KakaoMain, &Rect);
 		//::SetWindowPos(hwnd_KakaoAd, HWND_BOTTOM, NULL, NULL, NULL, NULL, /*SWP_NOACTIVATE*/SWP_NOACTIVATE/*SWP_HIDEWINDOW*/);
-		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (Rect.right - Rect.left - 2), 1000, SWP_NOMOVE );
+		//::SetWindowPos(hwnd_KakaoChildWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		 
 		
-		
-		::SendMessage(hwnd_KakaoAd, WM_CLOSE, NULL, NULL);
 		
 				
 	//}
