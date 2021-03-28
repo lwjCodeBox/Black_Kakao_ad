@@ -34,7 +34,7 @@ BEGIN_MESSAGE_MAP(CBlackKakaoadDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CBlackKakaoadDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDC_AUTO_RUN_BTN, &CBlackKakaoadDlg::OnBnClickedAutoRunBtn)
 	ON_WM_DESTROY()
-	ON_BN_CLICKED(IDC_AUTO_UNDO_BTN, &CBlackKakaoadDlg::OnBnClickedAutoUndoBtn)
+	ON_BN_CLICKED(IDC_AUTO_UNDO_BTN, &CBlackKakaoadDlg::OnBnClickedAutoUndoBtn)	
 END_MESSAGE_MAP()
 
 
@@ -79,6 +79,7 @@ void CBlackKakaoadDlg::OnPaint()
 	}
 	else
 	{
+
 		CDialogEx::OnPaint();
 	}
 }
@@ -97,6 +98,7 @@ void CBlackKakaoadDlg::OnDestroy()
 
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
 }
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 void CBlackKakaoadDlg::OnBnClickedOk()
 {
@@ -125,27 +127,36 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 #else
 	// https://jungpaeng.tistory.com/10
 	hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡");
+
 	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
 	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
-		
+
 	// 광고 삭제 하는 부분.
-	//if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {
-		::SendMessage(hwnd_KakaoAd, /*WM_CLOSE |*/ WM_DESTROY, NULL, NULL);
+	if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {
+		
 		RECT Rect;
 		::GetWindowRect(hwnd_KakaoMain, &Rect);
 		//::SetWindowPos(hwnd_KakaoAd, HWND_BOTTOM, NULL, NULL, NULL, NULL, /*SWP_NOACTIVATE*/SWP_NOACTIVATE/*SWP_HIDEWINDOW*/);
-		//::SetWindowPos(hwnd_KakaoChildWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-		 
-		
-		
-				
-	//}
-
+		::SendMessage(hwnd_KakaoAd, WM_CLOSE, NULL, NULL);
+		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (Rect.right - Rect.left - 2), (Rect.bottom - Rect.top - 33), SWP_NOMOVE);		
+	}
+	
 	//CDialogEx::OnOK();
 
 #endif
-}
+} 
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
+LRESULT CBlackKakaoadDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{	
+	if (hwnd_KakaoMain != NULL) {				
+		::GetWindowRect(hwnd_KakaoMain, &m_Kakao_Rect);
+		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
+	}
+
+	return CDialogEx::WindowProc(message, wParam, lParam);
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 void CBlackKakaoadDlg::OnBnClickedAutoRunBtn()
 {
@@ -226,6 +237,7 @@ void CBlackKakaoadDlg::OnBnClickedAutoRunBtn()
 
 	
 }
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 void CBlackKakaoadDlg::OnBnClickedAutoUndoBtn()
 {
@@ -238,5 +250,6 @@ void CBlackKakaoadDlg::OnBnClickedAutoUndoBtn()
 		regKey.DeleteSubKey(L"PClick");
 		regKey.Close();
 	}
-	
+		
 }
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
