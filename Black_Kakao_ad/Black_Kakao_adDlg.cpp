@@ -160,96 +160,56 @@ LRESULT CBlackKakaoadDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void CBlackKakaoadDlg::OnBnClickedAutoRunBtn()
 {
-#if 0
-	HKEY hKey = NULL;
-	wchar_t path[100];
-	wchar_t regSubKeyPath[100] = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
-	wchar_t valueName[100] = L"lwj_Auto_Run";
-
-	::GetModuleFileName(NULL, path, 1000);       //현재실행파일이름+경로알아내기
-	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, regSubKeyPath, 0, NULL,
-		REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey, NULL) == ERROR_SUCCESS) {
-
-		::RegSetValueEx(hKey, valueName, 0, REG_SZ, (BYTE *)path, /*strlen(path)*/200);
-		::RegCloseKey(hKey);
-		
-		AfxMessageBox(L"OK");
-		return;
-	}
-
-	AfxMessageBox(L"False");
-
-#elif 0
-	// 참고.
-	// https://nyamtutorial.tistory.com/134
-	// https://m.blog.naver.com/PostView.nhn?blogId=dunopiorg&logNo=220454481606&proxyReferer=&proxyReferer=https:%2F%2Fwww.google.com%2F
-	CRegKey regKey;
-
-	if (regKey.Create(HKEY_CURRENT_USER, L"SOFTWARE\\PClick") != ERROR_SUCCESS) {
-		MessageBox(L"등록 실패");
-	}
-	if (regKey.Open(HKEY_CURRENT_USER, L"SOFTWARE\\PClick") == ERROR_SUCCESS) {
-		regKey.SetStringValue(L"Path2", L"22"); //이름, 내용
-		regKey.Close();
-		MessageBox(L"등록 성공");
-	}
-	else {
-		MessageBox(L"등록 실패");
-	}
-
-	// 레지스트리 읽기.
-	CString strValue;
-	DWORD dwSize = 1024;
-	
-	if (regKey.Open(HKEY_CURRENT_USER, L"Software\\PClick") == ERROR_SUCCESS) {
-		if (regKey.QueryStringValue(L"Path2", strValue.GetBuffer(dwSize), &dwSize) == ERROR_SUCCESS) {
-			strValue.ReleaseBuffer();
-			regKey.Close();
-			MessageBox(strValue);
-		}
-		regKey.Close();
-	}
-#elif 0
 	HKEY hkey;
-	CString key_name, file_name;
-	char file_path[100];
-
-	// 레지스트리에 등록하고자 하는 키 이름
-	key_name = "MentSetup";
 
 	// 해당 경로의 레지스트리를 open 한다.
-	LONG reg = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0L,KEY_WRITE,&hkey);
+	LONG reg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0L, KEY_ALL_ACCESS | KEY_WOW64_64KEY, &hkey);
+	//LONG reg = RegOpenKeyEx(HKEY_CURRENT_USER, L"SOFTWARE\\Kakao", 0L, KEY_ALL_ACCESS, &hkey);
 
-		// 레지스트리를 성공적으로 open 하였다면 ERROR_SUCCESS값이 reg 에 저장된다.
-		if (ERROR_SUCCESS == reg) {
-			strcpy(file_path, "C:\\Users\\CD21-1004\\Desktop\\Black_Kakao_ad-master\\Black_Kakao_ad-master\\Debug\\Black_Kakao_ad");
-			// 레지스트리의 run 항목에 자동 실행될 프로그램의 경로를 저장한다.
-			reg = RegSetValueEx(hkey, key_name, 0, REG_SZ, (BYTE*)file_path, REG_SZ);
+	// 레지스트리를 성공적으로 open 하였다면 ERROR_SUCCESS값이 reg 에 저장된다.
+	if (ERROR_SUCCESS == reg) {
 
-			if (reg == ERROR_SUCCESS) MessageBox(L"등록 성공");
-			else MessageBox(L"등록 실패");
 
-			// 오픈한 키를 닫는다.
-			RegCloseKey(hkey);
-		}
-#endif
+		CString sValName = L"VALUENAME";
+		CString sVal = _T("Test");
+		TCHAR atcvalue[MAX_PATH];
+		ZeroMemory(atcvalue, sizeof(atcvalue));
+		_tcscpy_s(atcvalue, sVal.GetLength() + 1, sVal.GetBuffer());
 
-	
+		// 레지스트리의 run 항목에 자동 실행될 프로그램의 경로를 저장한다.
+		reg = ::RegSetValueEx(hkey, sValName, 0, REG_SZ, (LPBYTE)atcvalue, sValName.GetLength() + 1);
+
+		if (reg == ERROR_SUCCESS) MessageBox(L"등록 성공");
+		else MessageBox(L"등록 실패");
+
+		// 오픈한 키를 닫는다.
+		RegCloseKey(hkey);
+	}
+	else MessageBox(L"not open");
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 void CBlackKakaoadDlg::OnBnClickedAutoUndoBtn()
 {
-	// 레지스트리 삭제//	
-	CRegKey regKey;
+	HKEY hkey;
 
-	// open Regstry Key
-	if (regKey.Open(HKEY_CURRENT_USER, L"Software\\PClick") == ERROR_SUCCESS) {
-		//regKey.DeleteValue(L"Path");
-		regKey.DeleteSubKey(L"PClick");
-		regKey.Close();
+	// 해당 경로의 레지스트리를 open 한다.
+	LONG reg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0L, KEY_ALL_ACCESS | KEY_WOW64_64KEY, &hkey);
+	//LONG reg = RegOpenKeyEx(HKEY_CURRENT_USER, L"SOFTWARE\\Kakao", 0L, KEY_ALL_ACCESS, &hkey);
+
+	// 레지스트리를 성공적으로 open 하였다면 ERROR_SUCCESS값이 reg 에 저장된다.
+	if (ERROR_SUCCESS == reg) {
+
+		reg = RegDeleteValue(hkey, L"VALUENAME");
+
+		if (reg == ERROR_SUCCESS) MessageBox(L"삭제 성공");
+		else MessageBox(L"삭제 실패");
+
+
+		// 오픈한 키를 닫는다.
+		RegCloseKey(hkey);
 	}
+	else MessageBox(L"not open");
 		
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
