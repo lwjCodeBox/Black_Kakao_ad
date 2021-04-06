@@ -35,6 +35,7 @@ BEGIN_MESSAGE_MAP(CBlackKakaoadDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_AUTO_RUN_BTN, &CBlackKakaoadDlg::OnBnClickedAutoRunBtn)
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_AUTO_UNDO_BTN, &CBlackKakaoadDlg::OnBnClickedAutoUndoBtn)	
+	ON_BN_CLICKED(IDC_CONSOLE, &CBlackKakaoadDlg::OnBnClickedConsole)
 END_MESSAGE_MAP()
 
 
@@ -160,6 +161,9 @@ LRESULT CBlackKakaoadDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void CBlackKakaoadDlg::OnBnClickedAutoRunBtn()
 {
+	/* 레지스트리 위치.
+	>> 컴퓨터\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+	*/
 	HKEY hkey;
 
 	// 해당 경로의 레지스트리를 open 한다.
@@ -211,5 +215,54 @@ void CBlackKakaoadDlg::OnBnClickedAutoUndoBtn()
 	}
 	else MessageBox(L"not open");
 		
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+void CBlackKakaoadDlg::OnBnClickedConsole()
+{
+	if (AllocConsole()) {
+		// 콘솔창 타이틀 설정.
+		SetConsoleTitle(L"open console mode");
+
+		// 콘솔창 X버튼 비활성화.
+		::EnableMenuItem(::GetSystemMenu(::GetConsoleWindow(), FALSE), SC_CLOSE, MF_DISABLED);
+		::DrawMenuBar(::GetConsoleWindow());
+
+		Print_console("+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
+		Print_console("      Open Console\n");
+		Print_console("+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
+		Print_console("\n\n");
+	}
+	else {
+		FreeConsole();
+	}
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+void CBlackKakaoadDlg::Print_console(char *p_strMsg, int a_num)
+{
+	// 표준 출력 핸들 얻음
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	char strMsg[200];
+	sprintf(strMsg, "%d %s", a_num, p_strMsg);
+
+	// 출력
+	WriteFile(hConsole, strMsg, strlen(strMsg), NULL, NULL);
+}
+
+void CBlackKakaoadDlg::Print_console(char *p_strMsg)
+{
+	// 표준 출력 핸들 얻음
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	DWORD dwByte(0);
+	// 출력할 문자열
+	//char *strMsg = NULL;
+	char strMsg[200];
+	sprintf(strMsg, "%s", p_strMsg);
+
+	// 출력
+	WriteFile(hConsole, strMsg, strlen(strMsg), &dwByte, NULL);
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

@@ -12,6 +12,10 @@ class CBlackKakaoadDlg : public CDialogEx
 private:
 	HWND hwnd_KakaoMain, hwnd_KakaoLogin, hwnd_KakaoAd, hwnd_KakaoChildWnd;
 	RECT m_Kakao_Rect;
+
+private:
+	void Print_console(char *p_strMsg, int a_num);
+	void Print_console(char *p_strMsg);
 public:
 	CBlackKakaoadDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
 
@@ -39,4 +43,5 @@ public:
 	afx_msg void OnDestroy();
 	afx_msg void OnBnClickedAutoUndoBtn();		
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	afx_msg void OnBnClickedConsole();
 };
