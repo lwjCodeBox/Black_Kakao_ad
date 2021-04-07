@@ -36,6 +36,7 @@ BEGIN_MESSAGE_MAP(CBlackKakaoadDlg, CDialogEx)
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_AUTO_UNDO_BTN, &CBlackKakaoadDlg::OnBnClickedAutoUndoBtn)	
 	ON_BN_CLICKED(IDC_CONSOLE, &CBlackKakaoadDlg::OnBnClickedConsole)
+	ON_MESSAGE(27001, &CBlackKakaoadDlg::On27001)
 END_MESSAGE_MAP()
 
 
@@ -97,7 +98,7 @@ void CBlackKakaoadDlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
 
-	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
+	Thread_Allstop();
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -142,6 +143,14 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (Rect.right - Rect.left - 2), (Rect.bottom - Rect.top - 33), SWP_NOMOVE);		
 	}
 	
+	ThreadData *p = new ThreadData;
+	p->h_wnd = m_hWnd;
+	dataPtr.pThreadItemDataPtr.push_back(p);
+
+	p->h_kill_event = CreateEvent(NULL, 1, 0, NULL); // 스레드를 위한 이벤트 큐 생성.
+	p->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run, p, 10, &p->thread_id); // 스레드 생성.
+
+	GetDlgItem(IDOK)->EnableWindow(FALSE);
 	//CDialogEx::OnOK();
 
 #endif
@@ -150,38 +159,59 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 
 LRESULT CBlackKakaoadDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {	
-	if (hwnd_KakaoMain != NULL) {				
+	/*if (hwnd_KakaoMain != NULL) {				
 		::GetWindowRect(hwnd_KakaoMain, &m_Kakao_Rect);
 		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
-	}
+	}*/
 
 	return CDialogEx::WindowProc(message, wParam, lParam);
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 void CBlackKakaoadDlg::OnBnClickedAutoRunBtn()
-{
-	/* 레지스트리 위치.
-	>> 컴퓨터\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-	*/
+{	
+	//https://3001ssw.tistory.com/51
 	HKEY hkey;
 
 	// 해당 경로의 레지스트리를 open 한다.
-	LONG reg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0L, KEY_ALL_ACCESS | KEY_WOW64_64KEY, &hkey);
-	//LONG reg = RegOpenKeyEx(HKEY_CURRENT_USER, L"SOFTWARE\\Kakao", 0L, KEY_ALL_ACCESS, &hkey);
+	LONG reg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0L, KEY_ALL_ACCESS | KEY_WOW64_64KEY, &hkey);	
 
-	// 레지스트리를 성공적으로 open 하였다면 ERROR_SUCCESS값이 reg 에 저장된다.
+	// 레지스트리를 성공적으로 open 하였다면 ERROR_SUCCESS값이 reg에 저장된다.
 	if (ERROR_SUCCESS == reg) {
+#if 0 // .exe 파일을 레지스트리에 등록함.
+		// 실행 파일이 있는 경로를 얻어옴.
+		wchar_t chFilePath[MAX_PATH];
+		ZeroMemory(chFilePath, sizeof(chFilePath));
 
-
-		CString sValName = L"VALUENAME";
-		CString sVal = _T("Test");
-		TCHAR atcvalue[MAX_PATH];
-		ZeroMemory(atcvalue, sizeof(atcvalue));
-		_tcscpy_s(atcvalue, sVal.GetLength() + 1, sVal.GetBuffer());
+		GetModuleFileName(NULL, chFilePath, 256);		
+		rsize_t wcs_len = wcslen(chFilePath) * 2;
+		
+		wchar_t regiValue[MAX_PATH];
+		ZeroMemory(regiValue, sizeof(regiValue));
+		_tcscpy_s(regiValue, wcs_len, chFilePath);
 
 		// 레지스트리의 run 항목에 자동 실행될 프로그램의 경로를 저장한다.
-		reg = ::RegSetValueEx(hkey, sValName, 0, REG_SZ, (LPBYTE)atcvalue, sValName.GetLength() + 1);
+		reg = ::RegSetValueEx(hkey, L"Black_Kakao_ad", 0, REG_SZ, (LPBYTE)regiValue, wcs_len + 1);
+	
+#else // .bat 파일을 레지스트리에 등록함.
+		// 실행 파일이 있는 경로를 얻어옴.
+		wchar_t dir[MAX_PATH];
+		ZeroMemory(dir, sizeof(dir));
+
+		//GetCurrentDirectory(MAX_PATH, dir);
+		GetModuleFileName(NULL, dir, 256);
+		PathRemoveFileSpec(dir);
+		wchar_t *bat = L"\\black_ad.bat";
+		wcscat(dir, bat);
+		rsize_t wcs_len = wcslen(dir) * 2;
+		
+		wchar_t regiValue[MAX_PATH];
+		ZeroMemory(regiValue, sizeof(regiValue));
+		_tcscpy_s(regiValue, wcs_len, dir);
+
+		// 레지스트리의 run 항목에 자동 실행될 프로그램의 경로를 저장한다.
+		reg = ::RegSetValueEx(hkey, L"Black_Kakao_ad", 0, REG_SZ, (LPBYTE)regiValue, wcs_len);
+#endif
 
 		if (reg == ERROR_SUCCESS) MessageBox(L"등록 성공");
 		else MessageBox(L"등록 실패");
@@ -189,6 +219,7 @@ void CBlackKakaoadDlg::OnBnClickedAutoRunBtn()
 		// 오픈한 키를 닫는다.
 		RegCloseKey(hkey);
 	}
+
 	else MessageBox(L"not open");
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -198,17 +229,15 @@ void CBlackKakaoadDlg::OnBnClickedAutoUndoBtn()
 	HKEY hkey;
 
 	// 해당 경로의 레지스트리를 open 한다.
-	LONG reg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0L, KEY_ALL_ACCESS | KEY_WOW64_64KEY, &hkey);
-	//LONG reg = RegOpenKeyEx(HKEY_CURRENT_USER, L"SOFTWARE\\Kakao", 0L, KEY_ALL_ACCESS, &hkey);
+	LONG reg = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0L, KEY_ALL_ACCESS | KEY_WOW64_64KEY, &hkey);	
 
 	// 레지스트리를 성공적으로 open 하였다면 ERROR_SUCCESS값이 reg 에 저장된다.
 	if (ERROR_SUCCESS == reg) {
 
-		reg = RegDeleteValue(hkey, L"VALUENAME");
+		reg = RegDeleteValue(hkey, L"Black_Kakao_ad");
 
 		if (reg == ERROR_SUCCESS) MessageBox(L"삭제 성공");
 		else MessageBox(L"삭제 실패");
-
 
 		// 오픈한 키를 닫는다.
 		RegCloseKey(hkey);
@@ -264,5 +293,64 @@ void CBlackKakaoadDlg::Print_console(char *p_strMsg)
 
 	// 출력
 	WriteFile(hConsole, strMsg, strlen(strMsg), &dwByte, NULL);
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+// lParam >> 어떤 스레드가 종료되었는지를 알 수 있는 스레드 정보를 담고 있다.
+afx_msg LRESULT CBlackKakaoadDlg::On27001(WPARAM wParam, LPARAM lParam)
+{	
+	ThreadData *p = (ThreadData *)lParam;
+
+	for (int i = 0; i < (int)dataPtr.pThreadItemDataPtr.size(); i++) {
+		if (FindThreadPtr(p)) {
+			CloseHandle(p->h_kill_event); // 스레드가 종료되었기 때문에 스레드 이벤트 종료시킴.
+
+			// wParam == 0의 의미는 스스로 죽은 경우. (이 코드에서는 스스로 죽지 않는다. 이사님 코드 참고) 
+			if (wParam == 0)
+				delete p;
+			else
+				p->h_thread = NULL;
+
+			break;
+		}
+		else {
+			//WJ_String _str;
+			//_str.DbgLogW(L"Do not find Thread Data!!\n");
+		}
+	}
+
+	return 0;
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+void CBlackKakaoadDlg::Thread_Allstop()
+{
+	ThreadData *p;
+	int count = dataPtr.pThreadItemDataPtr.size();
+	for (int i = 0; i < count; i++) {
+		p = (ThreadData *)GetThreadPtr_2(i);
+		SetEvent(p->h_kill_event);
+	}
+
+	//WJ_String _str;
+	//_str.DbgLogW(L"Shut down the %d working threads.\n", count);
+
+	MSG msg;
+	while (0 < count) {
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+			if (msg.message == 27001) {
+				count--;
+				msg.wParam = 0;
+			}
+			TranslateMessage(&msg);
+			// DispatchMessage()함수를 통해서 27001 메시지를 처리하게 된다.
+			// (On27001(WPARAM wParam, LPARAM lParam) 이 함수로 빠짐.)
+			DispatchMessage(&msg);
+		}
+	}
+	
+	std::vector<void *>().swap(dataPtr.pThreadItemDataPtr); // 임의 백터와 교환을 한다.
+	
+	//_str.DbgLogW(L"*****Thread All Stop Finish!!!*****\n");
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

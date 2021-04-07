@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include "Thread/Multi_Thread.h"
 
 // CBlackKakaoadDlg 대화 상자
 class CBlackKakaoadDlg : public CDialogEx
@@ -13,9 +13,20 @@ private:
 	HWND hwnd_KakaoMain, hwnd_KakaoLogin, hwnd_KakaoAd, hwnd_KakaoChildWnd;
 	RECT m_Kakao_Rect;
 
+public:
+	TDataPtr dataPtr;
+
 private:
 	void Print_console(char *p_strMsg, int a_num);
 	void Print_console(char *p_strMsg);
+	
+	void Thread_Allstop();
+
+public:
+	HWND *Get_hwnd_KakaoMain() { return &hwnd_KakaoMain; }
+	HWND *Get_hwnd_KakaoChildWnd() { return &hwnd_KakaoChildWnd; }
+	RECT *Get_m_Kakao_Rect() { return &m_Kakao_Rect; }
+
 public:
 	CBlackKakaoadDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
 
@@ -44,4 +55,7 @@ public:
 	afx_msg void OnBnClickedAutoUndoBtn();		
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	afx_msg void OnBnClickedConsole();
+
+protected:
+	afx_msg LRESULT On27001(WPARAM wParam, LPARAM lParam);
 };
