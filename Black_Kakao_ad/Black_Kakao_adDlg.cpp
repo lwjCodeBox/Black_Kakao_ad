@@ -20,7 +20,7 @@
 CBlackKakaoadDlg::CBlackKakaoadDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_BLACK_KAKAO_AD_DIALOG, pParent)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON1); //IDR_MAINFRAME
 }
 
 void CBlackKakaoadDlg::DoDataExchange(CDataExchange* pDX)
@@ -109,14 +109,6 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
 	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
 
-	/*QMessageBox MsgBox;
-
-	MsgBox.setInformativeText("Hide KakaoTalk Ad!!\n");
-
-	MsgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-
-	MsgBox.setDefaultButton(QMessageBox::Ok);*/
-
 	//if (IDYES == MessageBox(L"광고삭제", L"Title", MB_ICONQUESTION | MB_YESNO)) {
 		RECT Rect;
 		::GetWindowRect(hwnd_KakaoMain, &Rect);
@@ -138,7 +130,6 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 		
 		RECT Rect;
 		::GetWindowRect(hwnd_KakaoMain, &Rect);
-		//::SetWindowPos(hwnd_KakaoAd, HWND_BOTTOM, NULL, NULL, NULL, NULL, /*SWP_NOACTIVATE*/SWP_NOACTIVATE/*SWP_HIDEWINDOW*/);
 		::SendMessage(hwnd_KakaoAd, WM_CLOSE, NULL, NULL);
 		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (Rect.right - Rect.left - 2), (Rect.bottom - Rect.top - 33), SWP_NOMOVE);		
 	}
@@ -314,8 +305,7 @@ afx_msg LRESULT CBlackKakaoadDlg::On27001(WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		else {
-			//WJ_String _str;
-			//_str.DbgLogW(L"Do not find Thread Data!!\n");
+			Print_console("Do not find Thread Data!!\n");			
 		}
 	}
 
@@ -331,9 +321,8 @@ void CBlackKakaoadDlg::Thread_Allstop()
 		p = (ThreadData *)GetThreadPtr_2(i);
 		SetEvent(p->h_kill_event);
 	}
-
-	//WJ_String _str;
-	//_str.DbgLogW(L"Shut down the %d working threads.\n", count);
+	
+	Print_console("Shut down the working threads.  ", count);
 
 	MSG msg;
 	while (0 < count) {
@@ -351,6 +340,6 @@ void CBlackKakaoadDlg::Thread_Allstop()
 	
 	std::vector<void *>().swap(dataPtr.pThreadItemDataPtr); // 임의 백터와 교환을 한다.
 	
-	//_str.DbgLogW(L"*****Thread All Stop Finish!!!*****\n");
+	Print_console("*****Thread All Stop Finish!!!*****\n");
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
