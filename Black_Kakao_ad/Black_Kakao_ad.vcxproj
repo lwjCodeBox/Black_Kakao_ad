@@ -212,6 +212,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Black_Kakao_ad.ico" />
+    <Image Include="res\icon3.ico" />
+    <Image Include="res\ico_ad_block.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

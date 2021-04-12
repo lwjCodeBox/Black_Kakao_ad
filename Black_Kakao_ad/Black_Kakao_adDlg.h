@@ -22,6 +22,9 @@ private:
 	
 	void Thread_Allstop();
 
+	// 트레이 아이콘을 추가, 삭제 그리고 변경하는 함수
+	void TrayStateSetup(int a_command, const wchar_t *ap_tip_str, int a_icon_id);
+
 public:
 	HWND *Get_hwnd_KakaoMain() { return &hwnd_KakaoMain; }
 	HWND *Get_hwnd_KakaoChildWnd() { return &hwnd_KakaoChildWnd; }
@@ -57,5 +60,7 @@ public:
 	afx_msg void OnBnClickedConsole();
 
 protected:
-	afx_msg LRESULT On27001(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT On27001(WPARAM wParam, LPARAM lParam);	
+	afx_msg LRESULT OnTrayMessage(WPARAM wParam, LPARAM lParam);
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 };

@@ -45,4 +45,3 @@ BOOL CBlackKakaoadApp::InitInstance()
 	
 	return FALSE;
 }
-

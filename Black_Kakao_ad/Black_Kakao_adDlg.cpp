@@ -36,7 +36,8 @@ BEGIN_MESSAGE_MAP(CBlackKakaoadDlg, CDialogEx)
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_AUTO_UNDO_BTN, &CBlackKakaoadDlg::OnBnClickedAutoUndoBtn)	
 	ON_BN_CLICKED(IDC_CONSOLE, &CBlackKakaoadDlg::OnBnClickedConsole)
-	ON_MESSAGE(27001, &CBlackKakaoadDlg::On27001)
+	ON_MESSAGE(27001, &CBlackKakaoadDlg::On27001)		
+	ON_MESSAGE(26001, &CBlackKakaoadDlg::OnTrayMessage)
 END_MESSAGE_MAP()
 
 
@@ -51,7 +52,11 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
-	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	// 닫기 버튼 비활성화.
+	GetDlgItem(IDCANCEL)->ShowWindow(false);
+
+	// 트레이 아이콘을 추가한다.
+	TrayStateSetup(NIM_ADD, L"MyThread와 함께하세요~ :)", IDI_TRAY_ICON);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -99,6 +104,11 @@ void CBlackKakaoadDlg::OnDestroy()
 	CDialogEx::OnDestroy();
 
 	Thread_Allstop();
+
+	// 트레이 아이콘을 제거한다.
+	TrayStateSetup(NIM_DELETE, L"", IDI_TRAY_ICON);
+
+	return;
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -154,6 +164,20 @@ LRESULT CBlackKakaoadDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		::GetWindowRect(hwnd_KakaoMain, &m_Kakao_Rect);
 		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
 	}*/
+
+	// https://blog.naver.com/tipsware/221124184150
+	// 'X 버튼'을 누른 경우에 발생하는 메시지. 
+	if (message == WM_CLOSE) {
+		//int check = MessageBox(L"창 숨기기??", L"다이얼로그 창 숨김??", MB_ICONQUESTION | MB_OKCANCEL);
+		//if (IDCANCEL == check) return 0;
+
+		ShowWindow(SW_SHOWMINIMIZED);//! 최소화후 숨겨야 화면에 나타나지 않음
+		PostMessage(WM_SHOWWINDOW, FALSE, SW_OTHERUNZOOM);
+		return 0;
+	}
+	else if (message == WM_DESTROY)
+		PostQuitMessage(0);
+		
 
 	return CDialogEx::WindowProc(message, wParam, lParam);
 }
@@ -343,3 +367,89 @@ void CBlackKakaoadDlg::Thread_Allstop()
 	Print_console("*****Thread All Stop Finish!!!*****\n");
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+// 트레이 아이콘을 추가, 삭제 그리고 변경하는 함수
+void CBlackKakaoadDlg::TrayStateSetup(int a_command, const wchar_t *ap_tip_str, int a_icon_id)
+{
+	NOTIFYICONDATA taskbar_notify_data;
+
+	// 트레이 아이콘의 설명글을 업데이트 한다.
+	wcscpy_s(taskbar_notify_data.szTip, 128, ap_tip_str);
+
+	// 트레이 아이콘의 상태를 업데이트 한다.
+	switch (a_command) {
+	case NIM_ADD:
+		taskbar_notify_data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+		break;
+	case NIM_DELETE:
+		taskbar_notify_data.uFlags = 0;
+		break;
+	case NIM_MODIFY:
+		taskbar_notify_data.uFlags = NIF_TIP | NIF_ICON;
+		break;
+	}
+
+	taskbar_notify_data.uID = (UINT)IDR_MAINFRAME;
+	taskbar_notify_data.cbSize = sizeof(NOTIFYICONDATA);
+	taskbar_notify_data.hWnd = this->m_hWnd;
+	taskbar_notify_data.uCallbackMessage = 26001;
+	taskbar_notify_data.hIcon = AfxGetApp()->LoadIcon(a_icon_id);
+	
+	// 트레이 아이콘에 정보를 적용한다.
+	Shell_NotifyIcon(a_command, &taskbar_notify_data);
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+//// 트레이 아이콘의 툴팁을 변경한다.
+//void CExamMFCDlg::OnBnClickedTipModifyBtn()
+//{
+//	CString str;
+//	// 사용자가 에디트 컨트롤에 추가한 문자열을 얻는다.
+//	GetDlgItemText(IDC_TIP_STR_EDIT, str);
+//	// 얻은 문자열로 트레이 아이콘의 툴팁을 변경한다.
+//	TrayStateSetup(NIM_MODIFY, str, IDI_TRAY_ICON);
+//}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
+{
+	if (lParam == WM_RBUTTONUP) {
+		CMenu menu;
+		menu.CreatePopupMenu();  // 팝업 메뉴를 생성한다.
+
+		CString str;
+		// 5개의 메뉴 항목을 추가한다.
+		for (int i = 0; i < 3; i++) {
+			str.Format(L"%d번 메뉴 항목", i);
+			// 각 항목을 선택하면 WM_COMMAND메시지가 발생하고 각 ID는
+			// wParam 항목의 하위 16비트에 저장되어 있다.
+			menu.AppendMenu(MF_STRING, 20000 + i, str);
+		}
+
+		CPoint pos;
+		GetCursorPos(&pos);  // 화면 상에 마우스 좌표를 얻는다!
+
+		// 지정한 위치에 팝업메뉴를 출력한다.
+		menu.TrackPopupMenu(TPM_LEFTALIGN, pos.x, pos.y, this);
+		// 생성된 팝업 메뉴를 삭제한다.
+		menu.DestroyMenu();
+	}
+	return 0;
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+BOOL CBlackKakaoadDlg::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+	if (wParam >= 20000 && wParam < 20003) {  //팝업 메뉴에서 항목이 선택된 경우!
+		CString str;
+		str.Format(L"%d번 메뉴 항목이 선택되었습니다!!", wParam - 20000);
+		AfxMessageBox(str);
+
+		if (20000 == wParam) {
+			//OnDestroy();
+			WindowProc(WM_DESTROY, wParam, lParam);
+		}
+	}
+
+	return CDialogEx::OnCommand(wParam, lParam);
+}
