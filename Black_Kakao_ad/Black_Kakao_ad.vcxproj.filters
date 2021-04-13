@@ -71,8 +71,5 @@
     <Image Include="res\ico_ad_block.ico">
       <Filter>리소스 파일</Filter>
     </Image>
-    <Image Include="res\icon3.ico">
-      <Filter>리소스 파일</Filter>
-    </Image>
   </ItemGroup>
 </Project>

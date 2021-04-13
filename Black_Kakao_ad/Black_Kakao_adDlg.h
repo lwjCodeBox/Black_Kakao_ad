@@ -12,7 +12,7 @@ class CBlackKakaoadDlg : public CDialogEx
 private:
 	HWND hwnd_KakaoMain, hwnd_KakaoLogin, hwnd_KakaoAd, hwnd_KakaoChildWnd;
 	RECT m_Kakao_Rect;
-
+	
 public:
 	TDataPtr dataPtr;
 
@@ -63,4 +63,6 @@ protected:
 	afx_msg LRESULT On27001(WPARAM wParam, LPARAM lParam);	
 	afx_msg LRESULT OnTrayMessage(WPARAM wParam, LPARAM lParam);
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+public:
+	virtual BOOL PreTranslateMessage(MSG *pMsg);
 };

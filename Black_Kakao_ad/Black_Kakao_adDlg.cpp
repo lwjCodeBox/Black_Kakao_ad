@@ -20,7 +20,7 @@
 CBlackKakaoadDlg::CBlackKakaoadDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_BLACK_KAKAO_AD_DIALOG, pParent)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON1); //IDR_MAINFRAME
+	m_hIcon = AfxGetApp()->LoadIcon(IDI_TRAY_ICON); //IDR_MAINFRAME
 }
 
 void CBlackKakaoadDlg::DoDataExchange(CDataExchange* pDX)
@@ -51,12 +51,12 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	//  프레임워크가 이 작업을 자동으로 수행합니다.
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
-
+	
 	// 닫기 버튼 비활성화.
 	GetDlgItem(IDCANCEL)->ShowWindow(false);
 
 	// 트레이 아이콘을 추가한다.
-	TrayStateSetup(NIM_ADD, L"MyThread와 함께하세요~ :)", IDI_TRAY_ICON);
+	TrayStateSetup(NIM_ADD, L"카카오톡 광과 제거~", IDI_TRAY_ICON);	
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -86,7 +86,6 @@ void CBlackKakaoadDlg::OnPaint()
 	}
 	else
 	{
-
 		CDialogEx::OnPaint();
 	}
 }
@@ -103,12 +102,11 @@ void CBlackKakaoadDlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
 
-	Thread_Allstop();
-
 	// 트레이 아이콘을 제거한다.
 	TrayStateSetup(NIM_DELETE, L"", IDI_TRAY_ICON);
 
-	return;
+	// 모든 스레드 종료.
+	Thread_Allstop();	
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -152,6 +150,7 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 	p->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run, p, 10, &p->thread_id); // 스레드 생성.
 
 	GetDlgItem(IDOK)->EnableWindow(FALSE);
+	SetFocus();
 	//CDialogEx::OnOK();
 
 #endif
@@ -171,15 +170,33 @@ LRESULT CBlackKakaoadDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		//int check = MessageBox(L"창 숨기기??", L"다이얼로그 창 숨김??", MB_ICONQUESTION | MB_OKCANCEL);
 		//if (IDCANCEL == check) return 0;
 
-		ShowWindow(SW_SHOWMINIMIZED);//! 최소화후 숨겨야 화면에 나타나지 않음
+		// 최소화후 숨겨야 화면에 나타나지 않음!
+		ShowWindow(SW_SHOWMINIMIZED);
 		PostMessage(WM_SHOWWINDOW, FALSE, SW_OTHERUNZOOM);
-		return 0;
-	}
-	else if (message == WM_DESTROY)
-		PostQuitMessage(0);
-		
 
+		return 0;
+	}	
+	else if (message == WM_DESTROY) {
+		int num;
+		num = 10;
+	}
+			
 	return CDialogEx::WindowProc(message, wParam, lParam);
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+BOOL CBlackKakaoadDlg::PreTranslateMessage(MSG *pMsg)
+{	
+	if (pMsg->message == WM_KEYDOWN) {
+		if (pMsg->wParam == VK_ESCAPE) {
+			ShowWindow(SW_SHOWMINIMIZED);
+			PostMessage(WM_SHOWWINDOW, FALSE, SW_OTHERUNZOOM);
+			
+			return true;
+		}
+	}
+
+	return CDialogEx::PreTranslateMessage(pMsg);
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -364,7 +381,7 @@ void CBlackKakaoadDlg::Thread_Allstop()
 	
 	std::vector<void *>().swap(dataPtr.pThreadItemDataPtr); // 임의 백터와 교환을 한다.
 	
-	Print_console("*****Thread All Stop Finish!!!*****\n");
+	Print_console("*****Thread All Stop Finish!!!*****\n", 99);
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -372,7 +389,7 @@ void CBlackKakaoadDlg::Thread_Allstop()
 void CBlackKakaoadDlg::TrayStateSetup(int a_command, const wchar_t *ap_tip_str, int a_icon_id)
 {
 	NOTIFYICONDATA taskbar_notify_data;
-
+	
 	// 트레이 아이콘의 설명글을 업데이트 한다.
 	wcscpy_s(taskbar_notify_data.szTip, 128, ap_tip_str);
 
@@ -389,7 +406,7 @@ void CBlackKakaoadDlg::TrayStateSetup(int a_command, const wchar_t *ap_tip_str, 
 		break;
 	}
 
-	taskbar_notify_data.uID = (UINT)IDR_MAINFRAME;
+	taskbar_notify_data.uID = (UINT)a_icon_id; //(UINT)IDR_MAINFRAME;
 	taskbar_notify_data.cbSize = sizeof(NOTIFYICONDATA);
 	taskbar_notify_data.hWnd = this->m_hWnd;
 	taskbar_notify_data.uCallbackMessage = 26001;
@@ -411,15 +428,19 @@ void CBlackKakaoadDlg::TrayStateSetup(int a_command, const wchar_t *ap_tip_str, 
 //}
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
+// OnTrayMessage() is On26001 of Custome Message Handler
 afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
-{
-	if (lParam == WM_RBUTTONUP) {
+{	
+	if (lParam == WM_RBUTTONUP) {		
 		CMenu menu;
-		menu.CreatePopupMenu();  // 팝업 메뉴를 생성한다.
+
+		menu.CreatePopupMenu();  // 팝업 메뉴를 생성한다.		
+
+		menu.AppendMenu(MF_STRING, 20000, L"종료");
 
 		CString str;
 		// 5개의 메뉴 항목을 추가한다.
-		for (int i = 0; i < 3; i++) {
+		for (int i = 1; i < 3; i++) {
 			str.Format(L"%d번 메뉴 항목", i);
 			// 각 항목을 선택하면 WM_COMMAND메시지가 발생하고 각 ID는
 			// wParam 항목의 하위 16비트에 저장되어 있다.
@@ -431,9 +452,27 @@ afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
 
 		// 지정한 위치에 팝업메뉴를 출력한다.
 		menu.TrackPopupMenu(TPM_LEFTALIGN, pos.x, pos.y, this);
+		
 		// 생성된 팝업 메뉴를 삭제한다.
 		menu.DestroyMenu();
-	}
+
+		/*
+		CPoint ptMouse;
+		::GetCursorPos(&ptMouse);
+		CMenu menu;
+		menu.LoadMenu(IDR_TRAY);
+		CMenu *pMenu = menu.GetSubMenu(0); // 활성화 할 메뉴 지정
+		pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, ptMouse.x, ptMouse.y, AfxGetMainWnd());
+		*/
+	}	
+	else if (lParam == WM_LBUTTONDBLCLK) {		
+		// 다이얼로그 다시 활성화.
+		ShowWindow(SW_RESTORE);
+				
+		// 다이얼로그 최상위로 올리기.
+		SetForegroundWindow();
+	}	
+
 	return 0;
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -441,15 +480,17 @@ afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
 BOOL CBlackKakaoadDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	if (wParam >= 20000 && wParam < 20003) {  //팝업 메뉴에서 항목이 선택된 경우!
-		CString str;
-		str.Format(L"%d번 메뉴 항목이 선택되었습니다!!", wParam - 20000);
-		AfxMessageBox(str);
-
-		if (20000 == wParam) {
-			//OnDestroy();
-			WindowProc(WM_DESTROY, wParam, lParam);
+		if (20000 == wParam) {			
+			// 프로그램 종료
+			PostQuitMessage(0); // DestroyWindow();			
+		}
+		else {
+			CString str;
+			str.Format(L"%d번 메뉴 항목이 선택되었습니다!!", wParam - 20000);
+			AfxMessageBox(str);
 		}
 	}
 
 	return CDialogEx::OnCommand(wParam, lParam);
 }
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
