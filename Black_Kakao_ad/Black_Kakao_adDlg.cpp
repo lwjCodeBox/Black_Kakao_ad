@@ -56,7 +56,7 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	GetDlgItem(IDCANCEL)->ShowWindow(false);
 
 	// 트레이 아이콘을 추가한다.
-	TrayStateSetup(NIM_ADD, L"카카오톡 광과 제거~", IDI_TRAY_ICON);	
+	TrayStateSetup(NIM_ADD, L"카카오톡 광과 제거~ (Ver : 1.2)", IDI_TRAY_ICON);	
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -403,7 +403,7 @@ void CBlackKakaoadDlg::TrayStateSetup(int a_command, const wchar_t *ap_tip_str, 
 		break;
 	case NIM_MODIFY:
 		taskbar_notify_data.uFlags = NIF_TIP | NIF_ICON;
-		break;
+		break;	
 	}
 
 	taskbar_notify_data.uID = (UINT)a_icon_id; //(UINT)IDR_MAINFRAME;
@@ -431,7 +431,7 @@ void CBlackKakaoadDlg::TrayStateSetup(int a_command, const wchar_t *ap_tip_str, 
 // OnTrayMessage() is On26001 of Custome Message Handler
 afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
 {	
-	if (lParam == WM_RBUTTONUP) {		
+	if (lParam == WM_RBUTTONUP) {				
 		CMenu menu;
 
 		menu.CreatePopupMenu();  // 팝업 메뉴를 생성한다.		
@@ -451,7 +451,7 @@ afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
 		GetCursorPos(&pos);  // 화면 상에 마우스 좌표를 얻는다!
 
 		// 지정한 위치에 팝업메뉴를 출력한다.
-		menu.TrackPopupMenu(TPM_LEFTALIGN, pos.x, pos.y, this);
+		menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pos.x, pos.y, this);
 		
 		// 생성된 팝업 메뉴를 삭제한다.
 		menu.DestroyMenu();
@@ -465,6 +465,9 @@ afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
 		pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, ptMouse.x, ptMouse.y, AfxGetMainWnd());
 		*/
 	}	
+	else if (lParam == WM_LBUTTONDOWN) {
+		
+	}		
 	else if (lParam == WM_LBUTTONDBLCLK) {		
 		// 다이얼로그 다시 활성화.
 		ShowWindow(SW_RESTORE);
