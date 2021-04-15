@@ -56,7 +56,7 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	GetDlgItem(IDCANCEL)->ShowWindow(false);
 
 	// 트레이 아이콘을 추가한다.
-	TrayStateSetup(NIM_ADD, L"카카오톡 광과 제거~ (Ver : 1.2)", IDI_TRAY_ICON);	
+	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 1.2)", IDI_TRAY_ICON);	
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -180,7 +180,7 @@ LRESULT CBlackKakaoadDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		int num;
 		num = 10;
 	}
-			
+	
 	return CDialogEx::WindowProc(message, wParam, lParam);
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -431,16 +431,19 @@ void CBlackKakaoadDlg::TrayStateSetup(int a_command, const wchar_t *ap_tip_str, 
 // OnTrayMessage() is On26001 of Custome Message Handler
 afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
 {	
-	if (lParam == WM_RBUTTONUP) {				
+	if (lParam == WM_RBUTTONUP) {		
+		SetForegroundWindow();
+
 		CMenu menu;
 
 		menu.CreatePopupMenu();  // 팝업 메뉴를 생성한다.		
 
 		menu.AppendMenu(MF_STRING, 20000, L"종료");
+		menu.AppendMenu(MF_STRING, 20001, L"열기");
 
 		CString str;
 		// 5개의 메뉴 항목을 추가한다.
-		for (int i = 1; i < 3; i++) {
+		for (int i = 2; i < 3; i++) {
 			str.Format(L"%d번 메뉴 항목", i);
 			// 각 항목을 선택하면 WM_COMMAND메시지가 발생하고 각 ID는
 			// wParam 항목의 하위 16비트에 저장되어 있다.
@@ -451,11 +454,11 @@ afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
 		GetCursorPos(&pos);  // 화면 상에 마우스 좌표를 얻는다!
 
 		// 지정한 위치에 팝업메뉴를 출력한다.
-		menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pos.x, pos.y, this);
-		
+		menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pos.x+5, pos.y+5, this);					
+
 		// 생성된 팝업 메뉴를 삭제한다.
 		menu.DestroyMenu();
-
+				
 		/*
 		CPoint ptMouse;
 		::GetCursorPos(&ptMouse);
@@ -464,10 +467,7 @@ afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
 		CMenu *pMenu = menu.GetSubMenu(0); // 활성화 할 메뉴 지정
 		pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, ptMouse.x, ptMouse.y, AfxGetMainWnd());
 		*/
-	}	
-	else if (lParam == WM_LBUTTONDOWN) {
-		
-	}		
+	}			
 	else if (lParam == WM_LBUTTONDBLCLK) {		
 		// 다이얼로그 다시 활성화.
 		ShowWindow(SW_RESTORE);
@@ -483,9 +483,16 @@ afx_msg LRESULT CBlackKakaoadDlg::OnTrayMessage(WPARAM wParam, LPARAM lParam)
 BOOL CBlackKakaoadDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	if (wParam >= 20000 && wParam < 20003) {  //팝업 메뉴에서 항목이 선택된 경우!
-		if (20000 == wParam) {			
+		if (20000 == wParam) {
 			// 프로그램 종료
 			PostQuitMessage(0); // DestroyWindow();			
+		}
+		else if (20001 == wParam) {
+			// 다이얼로그 다시 활성화.
+			ShowWindow(SW_RESTORE);
+
+			// 다이얼로그 최상위로 올리기.
+			SetForegroundWindow();
 		}
 		else {
 			CString str;

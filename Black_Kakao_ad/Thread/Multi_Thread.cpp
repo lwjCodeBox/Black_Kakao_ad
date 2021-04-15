@@ -41,7 +41,7 @@ void *GetThreadPtr_2(int a_pos)
 int ThreadWorking(ThreadData *ap_data)
 {
 	CBlackKakaoadDlg *main = (CBlackKakaoadDlg *)::AfxGetApp()->GetMainWnd();
-		
+			
 	if (main->Get_hwnd_KakaoMain() != NULL) {
 		::GetWindowRect(*(main->Get_hwnd_KakaoMain()), main->Get_m_Kakao_Rect());
 		::SetWindowPos(*(main->Get_hwnd_KakaoChildWnd()), HWND_BOTTOM, NULL, NULL, 
