@@ -149,6 +149,14 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 	p->h_kill_event = CreateEvent(NULL, 1, 0, NULL); // 스레드를 위한 이벤트 큐 생성.
 	p->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run, p, 10, &p->thread_id); // 스레드 생성.
 
+	// kakao active check
+	ThreadData *p_active = new ThreadData;
+	p_active->h_wnd = m_hWnd;
+	dataPtr.pThreadItemDataPtr.push_back(p_active);
+
+	p_active->h_kill_event = CreateEvent(NULL, 1, 0, NULL); // 스레드를 위한 이벤트 큐 생성.
+	p_active->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run2, p_active, 10, &p_active->thread_id); // 스레드 생성.
+
 	GetDlgItem(IDOK)->EnableWindow(FALSE);
 	SetFocus();
 	//CDialogEx::OnOK();
@@ -502,5 +510,52 @@ BOOL CBlackKakaoadDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 	}
 
 	return CDialogEx::OnCommand(wParam, lParam);
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+bool CBlackKakaoadDlg::FindKakaoHWND()
+{
+	HWND h_main = ::FindWindow(NULL, L"카카오톡");
+
+	h_main = ::GetForegroundWindow();
+
+	HWND h_lock = ::FindWindowEx(h_main, NULL, L"EVA_ChildWindow_Dblclk", NULL);
+	
+	if (h_lock) {
+		
+		return false;
+	}	
+
+	hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡");
+	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
+	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
+
+	//RECT Rect;
+	::GetWindowRect(hwnd_KakaoMain, &m_Kakao_Rect);
+	::SendMessage(hwnd_KakaoAd, WM_CLOSE, NULL, NULL);
+	::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
+
+	return true;
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+bool CBlackKakaoadDlg::ActiveKakao()
+{
+	HWND h_main = ::FindWindow(NULL, L"카카오톡");
+
+	if (h_main == NULL) {
+		return false;
+	}	
+
+	hwnd_KakaoMain = h_main;
+
+	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
+	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
+
+	::GetWindowRect(hwnd_KakaoMain, &m_Kakao_Rect);
+	::SendMessage(hwnd_KakaoAd, WM_CLOSE, NULL, NULL);
+	::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
+
+	return true;	
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

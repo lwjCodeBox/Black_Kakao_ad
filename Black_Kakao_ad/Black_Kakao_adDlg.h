@@ -28,7 +28,10 @@ private:
 public:
 	HWND *Get_hwnd_KakaoMain() { return &hwnd_KakaoMain; }
 	HWND *Get_hwnd_KakaoChildWnd() { return &hwnd_KakaoChildWnd; }
-	RECT *Get_m_Kakao_Rect() { return &m_Kakao_Rect; }
+	RECT *Get_m_Kakao_Rect() { return &m_Kakao_Rect; }	
+
+	bool FindKakaoHWND();
+	bool ActiveKakao();
 
 public:
 	CBlackKakaoadDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.

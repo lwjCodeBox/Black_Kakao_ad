@@ -30,6 +30,6 @@ void *FindThreadPtr(ThreadData *ap_data);
 // 벡터 배열에 있는 스레드 정보를 가져옴.
 void *GetThreadPtr_2(int a_pos);
 
-int ThreadWorking(ThreadData *ap_data);
 DWORD WINAPI SM_Thread_Run(void *ap_data);
+DWORD WINAPI SM_Thread_Run2(void *ap_data);
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
