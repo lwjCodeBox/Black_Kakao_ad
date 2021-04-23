@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Black_Kakao_ad"
-!define PRODUCT_VERSION "1.0"
+!define PRODUCT_VERSION "1.2"
 !define PRODUCT_PUBLISHER "Dev_lwj"
 !define PRODUCT_WEB_SITE "http://www.blog.naver.com/lwj987"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\Black_Kakao_ad.exe"
