@@ -31,5 +31,4 @@ void *FindThreadPtr(ThreadData *ap_data);
 void *GetThreadPtr_2(int a_pos);
 
 DWORD WINAPI SM_Thread_Run(void *ap_data);
-DWORD WINAPI SM_Thread_Run2(void *ap_data);
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

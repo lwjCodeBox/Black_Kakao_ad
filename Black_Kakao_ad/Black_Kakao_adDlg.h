@@ -10,11 +10,12 @@ class CBlackKakaoadDlg : public CDialogEx
 {
 // 생성입니다.
 private:
-	HWND hwnd_KakaoMain, hwnd_KakaoLogin, hwnd_KakaoAd, hwnd_KakaoChildWnd;
+	HWND hwnd_KakaoMain, hwnd_KakaoChildWnd, hwnd_KakaoBannerAd;
 	RECT m_Kakao_Rect;
 	
+	HANDLE mh_program_state;
 public:
-	TDataPtr dataPtr;
+	TDataPtr dataPtr;	
 
 private:
 	void Print_console(char *p_strMsg, int a_num);
@@ -26,11 +27,14 @@ private:
 	void TrayStateSetup(int a_command, const wchar_t *ap_tip_str, int a_icon_id);
 
 public:
-	HWND *Get_hwnd_KakaoMain() { return &hwnd_KakaoMain; }
+	HWND Get_hwnd_KakaoMain() { return hwnd_KakaoMain;	}
 	HWND *Get_hwnd_KakaoChildWnd() { return &hwnd_KakaoChildWnd; }
 	RECT *Get_m_Kakao_Rect() { return &m_Kakao_Rect; }	
+	
+	void Set_hwnd_KakaoMain() { hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡"); }
+	void All_Find_Kakao_Hwnd();
 
-	bool FindKakaoHWND();
+	bool Renew_hwnd_KakaoMain();
 	bool ActiveKakao();
 
 public:

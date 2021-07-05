@@ -52,11 +52,21 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 	
+
+	mh_program_state = CreateMutex(NULL, FALSE, L"Black_Kakao_ad");
+	if (ERROR_ALREADY_EXISTS == GetLastError()) {
+		MessageBox(L"이미 열려 있음.");
+		DestroyWindow();
+		return FALSE;
+	}
+
 	// 닫기 버튼 비활성화.
 	GetDlgItem(IDCANCEL)->ShowWindow(false);
+	// console 버튼 비활성화.
+	GetDlgItem(IDC_CONSOLE)->ShowWindow(false);
 
 	// 트레이 아이콘을 추가한다.
-	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 1.2)", IDI_TRAY_ICON);	
+	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.1)", IDI_TRAY_ICON);	
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -130,16 +140,12 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 	// https://jungpaeng.tistory.com/10
 	hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡");
 
-	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
-	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
+	All_Find_Kakao_Hwnd();
 
 	// 광고 삭제 하는 부분.
-	if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {
-		
-		RECT Rect;
-		::GetWindowRect(hwnd_KakaoMain, &Rect);
-		::SendMessage(hwnd_KakaoAd, WM_CLOSE, NULL, NULL);
-		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (Rect.right - Rect.left - 2), (Rect.bottom - Rect.top - 33), SWP_NOMOVE);		
+	if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {				
+		::SendMessage(hwnd_KakaoBannerAd, WM_CLOSE, NULL, NULL);
+		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
 	}
 	
 	ThreadData *p = new ThreadData;
@@ -149,6 +155,7 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 	p->h_kill_event = CreateEvent(NULL, 1, 0, NULL); // 스레드를 위한 이벤트 큐 생성.
 	p->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run, p, 10, &p->thread_id); // 스레드 생성.
 
+#if 0 // 스레드를 하나 더 생성하고 싶다면 이 주석을 풀고 사용하면 됨.
 	// kakao active check
 	ThreadData *p_active = new ThreadData;
 	p_active->h_wnd = m_hWnd;
@@ -156,6 +163,7 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 
 	p_active->h_kill_event = CreateEvent(NULL, 1, 0, NULL); // 스레드를 위한 이벤트 큐 생성.
 	p_active->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run2, p_active, 10, &p_active->thread_id); // 스레드 생성.
+#endif
 
 	GetDlgItem(IDOK)->EnableWindow(FALSE);
 	SetFocus();
@@ -167,11 +175,6 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 
 LRESULT CBlackKakaoadDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {	
-	/*if (hwnd_KakaoMain != NULL) {				
-		::GetWindowRect(hwnd_KakaoMain, &m_Kakao_Rect);
-		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
-	}*/
-
 	// https://blog.naver.com/tipsware/221124184150
 	// 'X 버튼'을 누른 경우에 발생하는 메시지. 
 	if (message == WM_CLOSE) {
@@ -199,7 +202,7 @@ BOOL CBlackKakaoadDlg::PreTranslateMessage(MSG *pMsg)
 		if (pMsg->wParam == VK_ESCAPE) {
 			ShowWindow(SW_SHOWMINIMIZED);
 			PostMessage(WM_SHOWWINDOW, FALSE, SW_OTHERUNZOOM);
-			
+
 			return true;
 		}
 	}
@@ -513,32 +516,6 @@ BOOL CBlackKakaoadDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-bool CBlackKakaoadDlg::FindKakaoHWND()
-{
-	HWND h_main = ::FindWindow(NULL, L"카카오톡");
-
-	h_main = ::GetForegroundWindow();
-
-	HWND h_lock = ::FindWindowEx(h_main, NULL, L"EVA_ChildWindow_Dblclk", NULL);
-	
-	if (h_lock) {
-		
-		return false;
-	}	
-
-	hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡");
-	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
-	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
-
-	//RECT Rect;
-	::GetWindowRect(hwnd_KakaoMain, &m_Kakao_Rect);
-	::SendMessage(hwnd_KakaoAd, WM_CLOSE, NULL, NULL);
-	::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
-
-	return true;
-}
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
 bool CBlackKakaoadDlg::ActiveKakao()
 {
 	HWND h_main = ::FindWindow(NULL, L"카카오톡");
@@ -549,13 +526,33 @@ bool CBlackKakaoadDlg::ActiveKakao()
 
 	hwnd_KakaoMain = h_main;
 
-	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
+	All_Find_Kakao_Hwnd();
+
+	::GetWindowRect(hwnd_KakaoMain, &m_Kakao_Rect);
+	::SendMessage(hwnd_KakaoBannerAd, WM_CLOSE, NULL, NULL);
+	::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 30), SWP_NOMOVE);
+
+	return true;	
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+void CBlackKakaoadDlg::All_Find_Kakao_Hwnd()
+{
+	hwnd_KakaoBannerAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"BannerAdWnd", NULL);
 	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
 
 	::GetWindowRect(hwnd_KakaoMain, &m_Kakao_Rect);
-	::SendMessage(hwnd_KakaoAd, WM_CLOSE, NULL, NULL);
-	::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
+}
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-	return true;	
+bool CBlackKakaoadDlg::Renew_hwnd_KakaoMain()
+{
+	HWND h = ::FindWindow(NULL, L"카카오톡");
+
+	if (h != hwnd_KakaoMain) {
+		hwnd_KakaoMain = h;
+		return true;
+	}
+	return false;
 }
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
