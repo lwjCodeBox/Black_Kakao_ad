@@ -66,9 +66,13 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	GetDlgItem(IDC_CONSOLE)->ShowWindow(false);
 
 	// 트레이 아이콘을 추가한다.
-	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.1)", IDI_TRAY_ICON);	
+	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.2)", IDI_TRAY_ICON);	
 
-	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
+	// 광고 삭제 버튼에 포커스를 맞춤으로써 실행했을 때 엔터 누르면 바로 실행됨.
+	// (이전에는 엔터 누르면 프로그램이 꺼졌음)
+	GetDlgItem(IDOK)->SetFocus();	
+
+	return FALSE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
 // 대화 상자에 최소화 단추를 추가할 경우 아이콘을 그리려면
