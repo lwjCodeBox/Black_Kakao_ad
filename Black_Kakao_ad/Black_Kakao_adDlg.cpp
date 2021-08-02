@@ -59,6 +59,14 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 		DestroyWindow();
 		return FALSE;
 	}
+	// 현재 pc에 설정된 언어 체크
+	LANGID lang_id = GetUserDefaultUILanguage(); 	
+	LANGID pri_lang_id = PRIMARYLANGID(lang_id); 
+	
+	if (pri_lang_id == LANG_KOREAN) 
+		mp_cur_lang = L"카카오톡";
+	else if(pri_lang_id == LANG_ENGLISH)
+		mp_cur_lang = L"KakaoTalk";
 
 	// 닫기 버튼 비활성화.
 	GetDlgItem(IDCANCEL)->ShowWindow(false);
@@ -66,7 +74,7 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	GetDlgItem(IDC_CONSOLE)->ShowWindow(false);
 
 	// 트레이 아이콘을 추가한다.
-	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.2)", IDI_TRAY_ICON);	
+	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.3)", IDI_TRAY_ICON);	
 
 	// 광고 삭제 버튼에 포커스를 맞춤으로써 실행했을 때 엔터 누르면 바로 실행됨.
 	// (이전에는 엔터 누르면 프로그램이 꺼졌음)
@@ -127,7 +135,7 @@ void CBlackKakaoadDlg::OnDestroy()
 void CBlackKakaoadDlg::OnBnClickedOk()
 {
 #if 0 // 원본
-	hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡");
+	hwnd_KakaoMain = ::FindWindow(NULL, mp_lang);
 	hwnd_KakaoAd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_Window", NULL);
 	hwnd_KakaoChildWnd = ::FindWindowEx(hwnd_KakaoMain, NULL, L"EVA_ChildWindow", NULL);
 
@@ -142,7 +150,7 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 	//}
 #else
 	// https://jungpaeng.tistory.com/10
-	hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡");
+	hwnd_KakaoMain = ::FindWindow(NULL, mp_cur_lang);
 
 	All_Find_Kakao_Hwnd();
 
@@ -522,7 +530,7 @@ BOOL CBlackKakaoadDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 
 bool CBlackKakaoadDlg::ActiveKakao()
 {
-	HWND h_main = ::FindWindow(NULL, L"카카오톡");
+	HWND h_main = ::FindWindow(NULL, mp_cur_lang);
 
 	if (h_main == NULL) {
 		return false;
@@ -551,7 +559,7 @@ void CBlackKakaoadDlg::All_Find_Kakao_Hwnd()
 
 bool CBlackKakaoadDlg::Renew_hwnd_KakaoMain()
 {
-	HWND h = ::FindWindow(NULL, L"카카오톡");
+	HWND h = ::FindWindow(NULL, mp_cur_lang);
 
 	if (h != hwnd_KakaoMain) {
 		hwnd_KakaoMain = h;

@@ -13,7 +13,9 @@ private:
 	HWND hwnd_KakaoMain, hwnd_KakaoChildWnd, hwnd_KakaoBannerAd;
 	RECT m_Kakao_Rect;
 	
-	HANDLE mh_program_state;
+	HANDLE mh_program_state;	
+	const wchar_t *mp_cur_lang;
+
 public:
 	TDataPtr dataPtr;	
 
@@ -31,7 +33,7 @@ public:
 	HWND *Get_hwnd_KakaoChildWnd() { return &hwnd_KakaoChildWnd; }
 	RECT *Get_m_Kakao_Rect() { return &m_Kakao_Rect; }	
 	
-	void Set_hwnd_KakaoMain() { hwnd_KakaoMain = ::FindWindow(NULL, L"카카오톡"); }
+	void Set_hwnd_KakaoMain() { hwnd_KakaoMain = ::FindWindow(NULL, mp_cur_lang); }
 	void All_Find_Kakao_Hwnd();
 
 	bool Renew_hwnd_KakaoMain();
