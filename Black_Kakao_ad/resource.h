@@ -1,6 +1,6 @@
 ﻿//{{NO_DEPENDENCIES}}
-// Microsoft Visual C++에서 생성한 포함 파일입니다.
-// BlackKakaoad.rc에서 사용되고 있습니다.
+// Microsoft Visual C++ generated include file.
+// Used by BlackKakaoad.rc
 //
 #define IDC_AUTO_RUN_BTN                3
 #define IDCANCEL2                       4

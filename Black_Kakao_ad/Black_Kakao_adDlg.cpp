@@ -74,7 +74,7 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	GetDlgItem(IDC_CONSOLE)->ShowWindow(false);
 
 	// 트레이 아이콘을 추가한다.
-	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.3)", IDI_TRAY_ICON);	
+	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.4)", IDI_TRAY_ICON);	
 
 	// 광고 삭제 버튼에 포커스를 맞춤으로써 실행했을 때 엔터 누르면 바로 실행됨.
 	// (이전에는 엔터 누르면 프로그램이 꺼졌음)
@@ -531,6 +531,11 @@ BOOL CBlackKakaoadDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 bool CBlackKakaoadDlg::ActiveKakao()
 {
 	HWND h_main = ::FindWindow(NULL, mp_cur_lang);
+	HWND hDlg = ::GetForegroundWindow();
+	
+	// 카톡 윈되우가 비활성화되었다면 좌표를 계산해서 카톡 광고부분을 삭제할 필요가 없기 때문에 조건을 만듬.
+	if (hDlg != h_main)
+		return false;
 
 	if (h_main == NULL) {
 		return false;
