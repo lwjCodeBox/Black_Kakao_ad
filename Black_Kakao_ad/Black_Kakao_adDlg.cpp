@@ -74,7 +74,7 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	GetDlgItem(IDC_CONSOLE)->ShowWindow(false);
 
 	// 트레이 아이콘을 추가한다.
-	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.4)", IDI_TRAY_ICON);	
+	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.5)", IDI_TRAY_ICON);	
 
 	// 광고 삭제 버튼에 포커스를 맞춤으로써 실행했을 때 엔터 누르면 바로 실행됨.
 	// (이전에는 엔터 누르면 프로그램이 꺼졌음)
@@ -155,32 +155,31 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 	All_Find_Kakao_Hwnd();
 
 	// 광고 삭제 하는 부분.
-	if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {				
+	if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {
 		::SendMessage(hwnd_KakaoBannerAd, WM_CLOSE, NULL, NULL);
 		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
-	}
-	
-	ThreadData *p = new ThreadData;
-	p->h_wnd = m_hWnd;
-	dataPtr.pThreadItemDataPtr.push_back(p);
 
-	p->h_kill_event = CreateEvent(NULL, 1, 0, NULL); // 스레드를 위한 이벤트 큐 생성.
-	p->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run, p, 10, &p->thread_id); // 스레드 생성.
+		ThreadData *p = new ThreadData;
+		p->h_wnd = m_hWnd;
+		dataPtr.pThreadItemDataPtr.push_back(p);
+
+		p->h_kill_event = CreateEvent(NULL, 1, 0, NULL); // 스레드를 위한 이벤트 큐 생성.
+		p->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run, p, 10, &p->thread_id); // 스레드 생성.
 
 #if 0 // 스레드를 하나 더 생성하고 싶다면 이 주석을 풀고 사용하면 됨.
 	// kakao active check
-	ThreadData *p_active = new ThreadData;
-	p_active->h_wnd = m_hWnd;
-	dataPtr.pThreadItemDataPtr.push_back(p_active);
+		ThreadData *p_active = new ThreadData;
+		p_active->h_wnd = m_hWnd;
+		dataPtr.pThreadItemDataPtr.push_back(p_active);
 
-	p_active->h_kill_event = CreateEvent(NULL, 1, 0, NULL); // 스레드를 위한 이벤트 큐 생성.
-	p_active->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run2, p_active, 10, &p_active->thread_id); // 스레드 생성.
+		p_active->h_kill_event = CreateEvent(NULL, 1, 0, NULL); // 스레드를 위한 이벤트 큐 생성.
+		p_active->h_thread = CreateThread(NULL, 0x80000, SM_Thread_Run2, p_active, 10, &p_active->thread_id); // 스레드 생성.
 #endif
 
-	GetDlgItem(IDOK)->EnableWindow(FALSE);
-	SetFocus();
-	//CDialogEx::OnOK();
-
+		GetDlgItem(IDOK)->EnableWindow(FALSE);
+		SetFocus();
+		//CDialogEx::OnOK();
+	}
 #endif
 } 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
