@@ -74,11 +74,14 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	GetDlgItem(IDC_CONSOLE)->ShowWindow(false);
 
 	// 트레이 아이콘을 추가한다.
-	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.5)", IDI_TRAY_ICON);	
+	TrayStateSetup(NIM_ADD, L"카카오톡 광고 제거~ (Ver : 2.6)", IDI_TRAY_ICON);	
 
 	// 광고 삭제 버튼에 포커스를 맞춤으로써 실행했을 때 엔터 누르면 바로 실행됨.
 	// (이전에는 엔터 누르면 프로그램이 꺼졌음)
 	GetDlgItem(IDOK)->SetFocus();	
+
+	OnBnClickedOk();
+	::PostMessage(m_hWnd, WM_CLOSE, 0, 0);
 
 	return FALSE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -155,7 +158,7 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 	All_Find_Kakao_Hwnd();
 
 	// 광고 삭제 하는 부분.
-	if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {
+	//if (IDYES == MessageBox(L"광고삭제", L"카카오톡 광고 삭제", MB_ICONQUESTION | MB_YESNO)) {
 		::SendMessage(hwnd_KakaoBannerAd, WM_CLOSE, NULL, NULL);
 		::SetWindowPos(hwnd_KakaoChildWnd, HWND_BOTTOM, NULL, NULL, (m_Kakao_Rect.right - m_Kakao_Rect.left - 2), (m_Kakao_Rect.bottom - m_Kakao_Rect.top - 33), SWP_NOMOVE);
 
@@ -179,7 +182,7 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 		GetDlgItem(IDOK)->EnableWindow(FALSE);
 		SetFocus();
 		//CDialogEx::OnOK();
-	}
+	//}
 #endif
 } 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
