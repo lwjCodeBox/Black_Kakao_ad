@@ -63,7 +63,7 @@ BOOL CBlackKakaoadDlg::OnInitDialog()
 	LANGID lang_id = GetUserDefaultUILanguage(); 	
 	LANGID pri_lang_id = PRIMARYLANGID(lang_id); 
 	
-	if (pri_lang_id == LANG_KOREAN) 
+	if (pri_lang_id == LANG_KOREAN)
 		mp_cur_lang = L"카카오톡";
 	else if(pri_lang_id == LANG_ENGLISH)
 		mp_cur_lang = L"KakaoTalk";
@@ -154,6 +154,10 @@ void CBlackKakaoadDlg::OnBnClickedOk()
 #else
 	// https://jungpaeng.tistory.com/10
 	hwnd_KakaoMain = ::FindWindow(NULL, mp_cur_lang);
+	if (!hwnd_KakaoMain) {
+		mp_cur_lang = L"KakaoTalk";
+		hwnd_KakaoMain = ::FindWindow(NULL, mp_cur_lang);
+	}
 
 	All_Find_Kakao_Hwnd();
 
